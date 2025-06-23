@@ -1,34 +1,39 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:uuid/uuid.dart';
 
 import '../models/tarea.dart';
 import '../services/tareas_service.dart';
 
-class TareaFormScreen extends StatefulWidget {
-  const TareaFormScreen({super.key});
+class TareaEditScreen extends StatefulWidget {
+  final Tarea tarea;
+
+  const TareaEditScreen({super.key, required this.tarea});
 
   @override
-  State<TareaFormScreen> createState() => _TareaFormScreenState();
+  State<TareaEditScreen> createState() => _TareaEditScreenState();
 }
 
-class _TareaFormScreenState extends State<TareaFormScreen> {
+class _TareaEditScreenState extends State<TareaEditScreen> {
   final _formKey = GlobalKey<FormState>();
-  final TextEditingController _nombreController = TextEditingController();
-  final TextEditingController _experienciaController = TextEditingController();
+  late TextEditingController _nombreController;
+  late TextEditingController _experienciaController;
   String? _categoriaSeleccionada;
+
+  @override
+  void initState() {
+    super.initState();
+    _nombreController = TextEditingController(text: widget.tarea.nombre);
+    _experienciaController =
+        TextEditingController(text: widget.tarea.experiencia.toString());
+    _categoriaSeleccionada = widget.tarea.categoria;
+  }
 
   @override
   Widget build(BuildContext context) {
     final categorias = Provider.of<TareasService>(context).categorias;
 
-    // Si no hay selección previa, asignar la primera categoría disponible
-    if (_categoriaSeleccionada == null && categorias.isNotEmpty) {
-      _categoriaSeleccionada = categorias.first;
-    }
-
     return Scaffold(
-      appBar: AppBar(title: const Text('Nueva Tarea')),
+      appBar: AppBar(title: const Text('Editar Tarea')),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Form(
@@ -49,9 +54,7 @@ class _TareaFormScreenState extends State<TareaFormScreen> {
                     value!.isEmpty ? 'Campo obligatorio' : null,
               ),
               DropdownButtonFormField<String>(
-                value: categorias.contains(_categoriaSeleccionada)
-                    ? _categoriaSeleccionada
-                    : null,
+                value: _categoriaSeleccionada,
                 decoration: const InputDecoration(labelText: 'Categoría'),
                 items: categorias
                     .map((cat) =>
@@ -69,20 +72,25 @@ class _TareaFormScreenState extends State<TareaFormScreen> {
               ElevatedButton(
                 onPressed: () {
                   if (_formKey.currentState!.validate()) {
-                    final tarea = Tarea(
-                      id: const Uuid().v4(),
+                    final tareaActualizada = Tarea(
+                      id: widget.tarea.id,
                       nombre: _nombreController.text,
                       experiencia:
                           double.tryParse(_experienciaController.text) ?? 0,
                       categoria: _categoriaSeleccionada!,
-                      creadaEn: DateTime.now(), // ✅ Agregado
+                      creadaEn: widget.tarea.creadaEn,
+                      imagenPath: widget.tarea.imagenPath,
+                      completadaEn: widget.tarea.completadaEn,
+                      clima: widget.tarea.clima,
                     );
+
                     Provider.of<TareasService>(context, listen: false)
-                        .agregarTarea(tarea);
+                        .actualizarTarea(tareaActualizada);
+
                     Navigator.pop(context);
                   }
                 },
-                child: const Text('Guardar'),
+                child: const Text('Guardar cambios'),
               )
             ],
           ),

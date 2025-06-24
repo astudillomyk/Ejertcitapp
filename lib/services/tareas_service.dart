@@ -66,11 +66,14 @@ class TareasService extends ChangeNotifier {
     await box.put('apodo', _apodo);
   }
 
-  void agregarTarea(Tarea tarea) {
-    _tareas.add(tarea);
-    guardarTareas();
-    notifyListeners();
+ Future<void> agregarTarea(Tarea tarea) async {
+  if (_tareas.any((t) => t.id == tarea.id)) {
+    return;
   }
+  _tareas.add(tarea);
+  await guardarTareas();
+  notifyListeners();
+}
 
   void actualizarTarea(Tarea tarea) {
     final index = _tareas.indexWhere((t) => t.id == tarea.id);

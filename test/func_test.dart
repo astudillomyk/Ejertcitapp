@@ -131,4 +131,33 @@ void main() {
     expect(t.completadaEn, isNotNull);
   });
 
+  test('TF-08: No se agrega una tarea duplicada con mismo ID', () async {
+  final tarea = Tarea(
+    id: 'duplicada',
+    nombre: 'Ciclismo',
+    categoria: 'Cardio',
+    experiencia: 10.0,
+    creadaEn: DateTime.now(),
+  );
+
+  service.agregarTarea(tarea);
+  service.agregarTarea(tarea);
+
+  expect(service.tareas.length, 1);
+});
+
+
+test('TF-09: No se agrega una categoría duplicada', () async {
+  service.agregarCategoria('Yoga');
+  final lengthBefore = service.categorias.length;
+
+  service.agregarCategoria('Yoga');
+  final lengthAfter = service.categorias.length;
+
+  expect(lengthAfter, equals(lengthBefore));
+});
+
+
+
+
 }

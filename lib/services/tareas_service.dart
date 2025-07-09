@@ -1,5 +1,10 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
+import 'package:http/http.dart' as http;
+import 'package:geolocator/geolocator.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart'; // <-- ✅ NUEVO
+
 import '../models/tarea.dart';
 
 class TareasService extends ChangeNotifier {
@@ -13,7 +18,6 @@ class TareasService extends ChangeNotifier {
   List<String> get categorias => _categorias;
   String get apodo => _apodo;
 
-  // Cargar datos de Hive
   Future<void> cargarDatos() async {
     final tareasBox = Hive.box<Tarea>('tareasBox');
     final historialBox = Hive.box<Tarea>('historialBox');
@@ -24,7 +28,6 @@ class TareasService extends ChangeNotifier {
     _historialEliminadas = historialBox.values.toList();
     _categorias = categoriasBox.values.toList();
 
-    // Si no hay categorías, agregamos por defecto
     if (_categorias.isEmpty) {
       _categorias = ['Caminata', 'Natación', 'Levantamiento de peso'];
       for (var cat in _categorias) {
@@ -33,7 +36,6 @@ class TareasService extends ChangeNotifier {
     }
 
     _apodo = apodoBox.get('apodo', defaultValue: '')!;
-
     notifyListeners();
   }
 
@@ -66,14 +68,12 @@ class TareasService extends ChangeNotifier {
     await box.put('apodo', _apodo);
   }
 
- Future<void> agregarTarea(Tarea tarea) async {
-  if (_tareas.any((t) => t.id == tarea.id)) {
-    return;
+  Future<void> agregarTarea(Tarea tarea) async {
+    if (_tareas.any((t) => t.id == tarea.id)) return;
+    _tareas.add(tarea);
+    await guardarTareas();
+    notifyListeners();
   }
-  _tareas.add(tarea);
-  await guardarTareas();
-  notifyListeners();
-}
 
   void actualizarTarea(Tarea tarea) {
     final index = _tareas.indexWhere((t) => t.id == tarea.id);
@@ -118,5 +118,36 @@ class TareasService extends ChangeNotifier {
     _apodo = apodo;
     guardarApodo();
     notifyListeners();
+  }
+
+  Future<String?> obtenerClimaActual() async {
+    try {
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) return null;
+      }
+      if (permission == LocationPermission.deniedForever) return null;
+
+      final position = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.low);
+
+      final apiKey = dotenv.env['OPENWEATHER_API_KEY']; 
+      if (apiKey == null || apiKey.isEmpty) return null;
+
+      final url =
+          'https://api.openweathermap.org/data/2.5/weather?lat=${position.latitude}&lon=${position.longitude}&units=metric&lang=es&appid=$apiKey';
+
+      final response = await http.get(Uri.parse(url));
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final climaDescripcion = data['weather'][0]['description'];
+        final temperatura = data['main']['temp'].toString();
+        return '$climaDescripcion, $temperatura°C';
+      }
+      return null;
+    } catch (_) {
+      return null;
+    }
   }
 }

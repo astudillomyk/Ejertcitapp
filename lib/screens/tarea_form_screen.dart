@@ -22,7 +22,6 @@ class _TareaFormScreenState extends State<TareaFormScreen> {
   Widget build(BuildContext context) {
     final categorias = Provider.of<TareasService>(context).categorias;
 
-    // Si no hay selección previa, asignar la primera categoría disponible
     if (_categoriaSeleccionada == null && categorias.isNotEmpty) {
       _categoriaSeleccionada = categorias.first;
     }
@@ -45,8 +44,19 @@ class _TareaFormScreenState extends State<TareaFormScreen> {
                 controller: _experienciaController,
                 keyboardType: TextInputType.number,
                 decoration: const InputDecoration(labelText: 'Experiencia %'),
-                validator: (value) =>
-                    value!.isEmpty ? 'Campo obligatorio' : null,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Campo obligatorio';
+                  }
+                  final numero = double.tryParse(value);
+                  if (numero == null) {
+                    return 'Debe ser un número válido';
+                  }
+                  if (numero <= 0 || numero > 100) {
+                    return 'Debe estar entre 1 y 100';
+                  }
+                  return null;
+                },
               ),
               DropdownButtonFormField<String>(
                 value: categorias.contains(_categoriaSeleccionada)
@@ -73,9 +83,9 @@ class _TareaFormScreenState extends State<TareaFormScreen> {
                       id: const Uuid().v4(),
                       nombre: _nombreController.text,
                       experiencia:
-                          double.tryParse(_experienciaController.text) ?? 0,
+                          double.parse(_experienciaController.text),
                       categoria: _categoriaSeleccionada!,
-                      creadaEn: DateTime.now(), // ✅ Agregado
+                      creadaEn: DateTime.now(),
                     );
                     Provider.of<TareasService>(context, listen: false)
                         .agregarTarea(tarea);

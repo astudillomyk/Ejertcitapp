@@ -1,8 +1,16 @@
 # Ejercitapp
 Bitacora de ejercicio
+# Para iniciar los test
+### Para pruebas e2e
+flutter test integration_test/app_test.dart
+### Para el resto de test
+flutter test
+### Para coverage
+flutter test --coverage 
+
+
 
 # Antes de iniciar la app
-
 
 ### Cambiar nombre a .env.example 
 cp .env.example .env

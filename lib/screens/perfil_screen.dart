@@ -20,7 +20,10 @@ class PerfilScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final tareas = Provider.of<TareasService>(context).tareas;
+    final tareasService = Provider.of<TareasService>(context);
+    final apodo = tareasService.apodo;
+    final tareas = tareasService.tareas;
+
     final completadas = tareas.where((t) => t.completadaEn != null).toList();
     final inconclusas = tareas.where((t) => t.completadaEn == null).toList();
 
@@ -64,7 +67,6 @@ class PerfilScreen extends StatelessWidget {
       return FlSpot(x, e.value);
     }).toList();
 
-    // Gráfico barras temperatura
     final barGroupsTemperatura = temperaturaPorDia.entries.map((e) {
       final index = temperaturaPorDia.keys.toList().indexOf(e.key);
       return BarChartGroupData(
@@ -75,7 +77,6 @@ class PerfilScreen extends StatelessWidget {
       );
     }).toList();
 
-    // Gráfico barras clima categórico con etiquetas texto
     final barGroupsClima = descripcionPorDia.entries.map((e) {
       final index = descripcionPorDia.keys.toList().indexOf(e.key);
       final color = _colorPorClima(e.value);
@@ -96,7 +97,9 @@ class PerfilScreen extends StatelessWidget {
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Perfil y Progreso')),
+      appBar: AppBar(
+        title: Text(apodo.isNotEmpty ? 'Perfil de $apodo' : 'Perfil y Progreso'),
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -182,7 +185,6 @@ class PerfilScreen extends StatelessWidget {
                   ),
                   borderData: FlBorderData(show: false),
                   gridData: FlGridData(show: false),
-
                   barTouchData: BarTouchData(
                     enabled: true,
                     touchTooltipData: BarTouchTooltipData(

@@ -1,3 +1,5 @@
+// home_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
@@ -13,13 +15,16 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final tareasService = Provider.of<TareasService>(context);
     final tareas = tareasService.tareas;
+    final apodo = tareasService.apodo;
 
     final tareasInconclusas = tareas.where((t) => t.completadaEn == null).toList();
     final tareasCompletadas = tareas.where((t) => t.completadaEn != null).toList();
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Bitácora de Ejercicio'),
+        title: Text(apodo.isNotEmpty
+            ? 'Bitácora de $apodo'
+            : 'Bitácora de Ejercicio'),
         actions: [
           IconButton(
             icon: const Icon(Icons.history),
@@ -63,7 +68,6 @@ class HomeScreen extends StatelessWidget {
                           final picker = ImagePicker();
                           final image = await picker.pickImage(source: ImageSource.camera);
                           if (image != null) {
-                            // Obtener clima desde el servicio
                             final clima = await tareasService.obtenerClimaActual();
                             tareasService.completarTarea(tarea.id, image.path, clima: clima);
                           }

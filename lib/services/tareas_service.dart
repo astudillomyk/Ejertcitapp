@@ -1,9 +1,11 @@
+// tareas_service.dart
+
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:http/http.dart' as http;
 import 'package:geolocator/geolocator.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart'; // <-- ✅ NUEVO
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import '../models/tarea.dart';
 
@@ -132,7 +134,7 @@ class TareasService extends ChangeNotifier {
       final position = await Geolocator.getCurrentPosition(
           desiredAccuracy: LocationAccuracy.low);
 
-      final apiKey = dotenv.env['OPENWEATHER_API_KEY']; 
+      final apiKey = dotenv.env['OPENWEATHER_API_KEY'];
       if (apiKey == null || apiKey.isEmpty) return null;
 
       final url =

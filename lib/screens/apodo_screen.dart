@@ -28,6 +28,7 @@ class _ApodoScreenState extends State<ApodoScreen> {
         child: Column(
           children: [
             TextField(
+              key: const Key('apodo_input'),  // <-- Key agregada
               controller: _controller,
               decoration: const InputDecoration(labelText: 'Apodo'),
             ),
